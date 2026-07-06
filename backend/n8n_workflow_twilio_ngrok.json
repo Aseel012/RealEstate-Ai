@@ -1,0 +1,838 @@
+{
+  "name": "Real Estate AI — Twilio + Google Sheets (ngrok)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-lead",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "n001",
+      "name": "Webhook — New Lead",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "real-estate-new-lead"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ts",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "fn",
+              "name": "full_name",
+              "value": "={{ $json.body.full_name ?? $json.full_name ?? 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "ph",
+              "name": "phone",
+              "value": "={{ $json.body.phone ?? $json.phone ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "loc",
+              "name": "location",
+              "value": "={{ $json.body.location ?? $json.location ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "pt",
+              "name": "property_type",
+              "value": "={{ $json.body.property_type ?? $json.property_type ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "pr",
+              "name": "price_range",
+              "value": "={{ $json.body.price_range ?? $json.price_range ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "src",
+              "name": "source",
+              "value": "={{ $json.body.source ?? $json.source ?? 'flutter_app' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n002",
+      "name": "Set Lead Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1EpkkJlk1DhiEDV58TvNEim3Ws3mBvAb0dNS76fkm9yI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.timestamp }}",
+            "Full Name": "={{ $json.full_name }}",
+            "Phone": "={{ $json.phone }}",
+            "Location": "={{ $json.location }}",
+            "Property Type": "={{ $json.property_type }}",
+            "Budget": "={{ $json.price_range }}",
+            "Source": "={{ $json.source }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Property Type",
+              "displayName": "Property Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {
+          "valueInputMode": "RAW"
+        }
+      },
+      "id": "n003",
+      "name": "Sheet1 — Append Lead",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        720,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_OAUTH2_CREDENTIAL_ID",
+          "name": "Google Sheets OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "from": "+16812068540",
+        "to": "=+91{{ $('Set Lead Fields').item.json.phone.toString().replace(/^\\+91/, '').replace(/^91/, '') }}",
+        "message": "=Hi {{ $('Set Lead Fields').item.json.full_name }}! Thank you for your inquiry about a {{ $('Set Lead Fields').item.json.property_type }} in {{ $('Set Lead Fields').item.json.location }}. Our team will call you shortly within 5 minutes. — ESTAT·IQ"
+      },
+      "id": "n004",
+      "name": "Twilio — SMS Confirmation",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        960,
+        180
+      ],
+      "credentials": {
+        "twilioApi": {
+          "id": "YOUR_TWILIO_CREDENTIAL_ID",
+          "name": "Twilio API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Lead saved and SMS sent\",\n  \"name\": \"{{ $('Set Lead Fields').item.json.full_name }}\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "n005",
+      "name": "Respond 200 OK — New Lead",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "trigger-call",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "n006",
+      "name": "Webhook — Trigger Call",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        600
+      ],
+      "webhookId": "real-estate-trigger-call"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ph2",
+              "name": "phone_number",
+              "value": "={{ $json.body.phone_number ?? $json.phone_number ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "fn2",
+              "name": "full_name",
+              "value": "={{ $json.body.full_name ?? $json.full_name ?? 'Client' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n007",
+      "name": "Set Call Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.bland.ai/v1/calls",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "authorization",
+              "value": "org_7de8cea5444d68ed6501d4bf255eb7add707b46a3e1ac5c53f1d8a6fc8de0366dd849c044ec39cc24a4e69"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"phone_number\": \"+91{{ $json.phone_number.toString().replace(/^\\+91/, '').replace(/^91/, '') }}\",\n  \"task\": \"You are a friendly real estate assistant for ESTAT·IQ. Call {{ $json.full_name }} and discuss their property inquiry. Be polite, human-like, and helpful. Ask about preferred size in sq.ft or guj, exact location preference, and when they would like a site visit. Keep the call under 3 minutes.\",\n  \"voice\": \"en-IN-WaveNetD\",\n  \"reduce_latency\": true,\n  \"record\": true,\n  \"max_duration\": 3\n}",
+        "options": {}
+      },
+      "id": "n008",
+      "name": "Bland.ai — Make Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1EpkkJlk1DhiEDV58TvNEim3Ws3mBvAb0dNS76fkm9yI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "calling",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.toISO() }}",
+            "Full Name": "={{ $('Set Call Fields').item.json.full_name }}",
+            "Phone": "={{ $('Set Call Fields').item.json.phone_number }}",
+            "Call Status": "=Initiated",
+            "Duration": "=-",
+            "Bot Summary": "=Call triggered via admin panel",
+            "Next Action": "=Await callback"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Call Status",
+              "displayName": "Call Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Duration",
+              "displayName": "Duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bot Summary",
+              "displayName": "Bot Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Next Action",
+              "displayName": "Next Action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {
+          "valueInputMode": "RAW"
+        }
+      },
+      "id": "n009",
+      "name": "Sheet3 — Log Call",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        960,
+        600
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_OAUTH2_CREDENTIAL_ID",
+          "name": "Google Sheets OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Call triggered\",\n  \"call_id\": \"{{ $('Bland.ai — Make Call').item.json.call_id ?? 'N/A' }}\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "n010",
+      "name": "Respond 200 OK — Trigger Call",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "book-appointment",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "n011",
+      "name": "Webhook — Book Appointment",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        900
+      ],
+      "webhookId": "real-estate-book-appointment"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "full_name",
+              "value": "={{ $json.body.full_name ?? $json.full_name ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "phone",
+              "value": "={{ $json.body.phone ?? $json.phone ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "appointment_date",
+              "value": "={{ $json.body.appointment_date ?? $json.appointment_date ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "appointment_time",
+              "value": "={{ $json.body.appointment_time ?? $json.appointment_time ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a5",
+              "name": "location",
+              "value": "={{ $json.body.location ?? $json.location ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a6",
+              "name": "property_type",
+              "value": "={{ $json.body.property_type ?? $json.property_type ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a7",
+              "name": "budget",
+              "value": "={{ $json.body.budget ?? $json.budget ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a8",
+              "name": "notes",
+              "value": "={{ $json.body.notes ?? $json.notes ?? '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n012",
+      "name": "Set Appointment Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1EpkkJlk1DhiEDV58TvNEim3Ws3mBvAb0dNS76fkm9yI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Appointments",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.toISO() }}",
+            "Full Name": "={{ $json.full_name }}",
+            "Phone": "={{ $json.phone }}",
+            "Appointment Date": "={{ $json.appointment_date }}",
+            "Appointment Time": "={{ $json.appointment_time }}",
+            "Location": "={{ $json.location }}",
+            "Property Type": "={{ $json.property_type }}",
+            "Budget": "={{ $json.budget }}",
+            "Status": "=Confirmed",
+            "Notes": "={{ $json.notes }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Appointment Date",
+              "displayName": "Appointment Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Appointment Time",
+              "displayName": "Appointment Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Property Type",
+              "displayName": "Property Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {
+          "valueInputMode": "RAW"
+        }
+      },
+      "id": "n013",
+      "name": "Sheet4 — Log Appointment",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        720,
+        900
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_OAUTH2_CREDENTIAL_ID",
+          "name": "Google Sheets OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "from": "+16812068540",
+        "to": "=+91{{ $('Set Appointment Fields').item.json.phone.toString().replace(/^\\+91/, '').replace(/^91/, '') }}",
+        "message": "=Hi {{ $('Set Appointment Fields').item.json.full_name }}! Your site visit is confirmed for {{ $('Set Appointment Fields').item.json.appointment_date }} at {{ $('Set Appointment Fields').item.json.appointment_time }} in {{ $('Set Appointment Fields').item.json.location }}. See you then! — ESTAT·IQ"
+      },
+      "id": "n014",
+      "name": "Twilio — Appointment SMS",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        960,
+        840
+      ],
+      "credentials": {
+        "twilioApi": {
+          "id": "XXxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "name": "Twilio API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Appointment booked and SMS sent\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "n015",
+      "name": "Respond 200 OK — Appointment",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        900
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook — New Lead": {
+      "main": [
+        [
+          {
+            "node": "Set Lead Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Lead Fields": {
+      "main": [
+        [
+          {
+            "node": "Sheet1 — Append Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet1 — Append Lead": {
+      "main": [
+        [
+          {
+            "node": "Twilio — SMS Confirmation",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond 200 OK — New Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook — Trigger Call": {
+      "main": [
+        [
+          {
+            "node": "Set Call Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Call Fields": {
+      "main": [
+        [
+          {
+            "node": "Bland.ai — Make Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bland.ai — Make Call": {
+      "main": [
+        [
+          {
+            "node": "Sheet3 — Log Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet3 — Log Call": {
+      "main": [
+        [
+          {
+            "node": "Respond 200 OK — Trigger Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook — Book Appointment": {
+      "main": [
+        [
+          {
+            "node": "Set Appointment Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Appointment Fields": {
+      "main": [
+        [
+          {
+            "node": "Sheet4 — Log Appointment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet4 — Log Appointment": {
+      "main": [
+        [
+          {
+            "node": "Twilio — Appointment SMS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond 200 OK — Appointment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": {},
+  "tags": [
+    "real-estate",
+    "twilio",
+    "google-sheets"
+  ],
+  "triggerCount": 3,
+  "updatedAt": "2026-04-05T00:00:00.000Z",
+  "versionId": "1"
+}

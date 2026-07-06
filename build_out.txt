@@ -1,0 +1,22 @@
+﻿flutter : Unable to find 
+suitable Visual Studio 
+toolchain. Please run 
+`flutter doctor` for 
+more details.
+At line:1 char:1
++ flutter build windows 
+--debug 2>&1 | Out-File 
+-Encoding utf8 build_ou 
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo       
+       : NotSpecified:   
+  (Unable to find ...r   
+  more details.:Strin    
+g) [], RemoteExcepti    
+on
+    + FullyQualifiedErro 
+   rId : NativeCommandE  
+  rror
+ 

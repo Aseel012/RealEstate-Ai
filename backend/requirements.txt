@@ -1,0 +1,7 @@
+flask
+flask-cors
+twilio
+requests
+gspread
+oauth2client
+gunicorn
