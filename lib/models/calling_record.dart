@@ -9,6 +9,7 @@
 ///   E: Duration     — call length (e.g. "2m 35s")
 ///   F: Bot Summary  — AI-generated call summary
 ///   G: Next Action  — e.g. "Schedule Meeting" | "Call Again"
+
 class CallingRecord {
   final String timestamp;
   final String fullName;
