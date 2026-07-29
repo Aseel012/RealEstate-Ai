@@ -1,5 +1,6 @@
 /// Sheet 1 — Lead submitted via Google Form or Flutter app form.
 /// Columns: A:Timestamp  B:Name  C:Phone  D:Location  E:Type  F:Budget
+
 class Lead {
   final String timestamp;
   final String fullName;
